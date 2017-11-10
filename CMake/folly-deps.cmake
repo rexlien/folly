@@ -8,7 +8,7 @@ find_package(Boost 1.55.0 MODULE
     regex
     system
     thread
-  REQUIRED
+  
 )
 find_package(DoubleConversion MODULE REQUIRED)
 find_package(GFlags MODULE REQUIRED)

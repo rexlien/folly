@@ -68,6 +68,7 @@ endforeach()
 
 # Apply the option set for Folly to the specified target.
 function(apply_folly_compile_options_to_target THETARGET)
+if(MSVC)
   # The general options passed:
   target_compile_options(${THETARGET}
     PUBLIC
@@ -281,4 +282,5 @@ function(apply_folly_compile_options_to_target THETARGET)
   if (MSVC_ENABLE_LTCG)
     set_property(TARGET ${THETARGET} APPEND_STRING PROPERTY LINK_FLAGS_RELEASE " /LTCG")
   endif()
+endif()
 endfunction()

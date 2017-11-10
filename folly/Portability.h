@@ -262,7 +262,7 @@ constexpr bool kIsSanitizeThread = false;
 #endif
 
 #if FOLLY_MOBILE
-#undef FOLLY_TLS
+//#undef FOLLY_TLS
 #endif
 
 // It turns out that GNU libstdc++ and LLVM libc++ differ on how they implement

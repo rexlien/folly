@@ -15,7 +15,7 @@ set(PACKAGE_BUGREPORT "https://github.com/facebook/folly/issues")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(${PACKAGE_NAME} CXX)
-
+if(MSVC)
 if (MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920)
   set(MSVC_IS_2017 ON)
 elseif (MSVC_VERSION EQUAL 1900)
@@ -23,13 +23,14 @@ elseif (MSVC_VERSION EQUAL 1900)
 else()
   message(FATAL_ERROR "This build script only supports building Folly on 64-bit Windows with Visual Studio 2015 or Visual Studio 2017. MSVC version '${MSVC_VERSION}' is not supported.")
 endif()
+endif()
 
 # Check architecture OS
 if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-  message(FATAL_ERROR "Folly requires a 64bit OS")
+  #message(FATAL_ERROR "Folly requires a 64bit OS")
 endif()
 if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-  message(FATAL_ERROR "You should only be using CMake to build Folly if you are on Windows!")
+  #message(FATAL_ERROR "You should only be using CMake to build Folly if you are on Windows!")
 endif()
 
 set(FOLLY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/folly")
@@ -146,7 +147,7 @@ set(FOLLY_SHINY_DEPENDENCIES
   OpenSSL::SSL
   OpenSSL::Crypto
 )
-
+if(MSVC)
 set(FOLLY_LINK_LIBRARIES
   ${DOUBLE_CONVERSION_LIBRARY}
   ${LIBEVENT_LIB}
@@ -154,9 +155,17 @@ set(FOLLY_LINK_LIBRARIES
   ${LIBGLOG_LIBRARY}
   Iphlpapi.lib
   Ws2_32.lib
-
   ${FOLLY_SHINY_DEPENDENCIES}
 )
+else()
+set(FOLLY_LINK_LIBRARIES
+  ${DOUBLE_CONVERSION_LIBRARY}
+  ${LIBEVENT_LIB}
+  ${LIBGFLAGS_LIBRARY}
+  ${LIBGLOG_LIBRARY}
+  ${FOLLY_SHINY_DEPENDENCIES}
+)
+endif()
 
 target_include_directories(folly_base
   PUBLIC
@@ -177,6 +186,8 @@ if (FOLLY_HAVE_PTHREAD)
 endif()
 
 # Now to generate the fingerprint tables
+if(MSVC OR LINUX_PC)
+
 add_executable(GenerateFingerprintTables
   ${FOLLY_DIR}/build/GenerateFingerprintTables.cpp
   $<TARGET_OBJECTS:folly_base>
@@ -189,6 +200,7 @@ set_property(TARGET GenerateFingerprintTables PROPERTY FOLDER "Build")
 source_group("" FILES ${FOLLY_DIR}/build/GenerateFingerprintTables.cpp)
 
 # Compile the fingerprint tables.
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/folly/build/FingerprintTables.cpp
   COMMAND GenerateFingerprintTables
@@ -196,6 +208,8 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/folly/build/
   COMMENT "Generating the fingerprint tables..."
 )
+
+
 add_library(folly_fingerprint STATIC
   ${CMAKE_CURRENT_BINARY_DIR}/folly/build/FingerprintTables.cpp
   ${FOLLY_DIR}/Fingerprint.h
@@ -207,15 +221,16 @@ target_link_libraries(folly_fingerprint PRIVATE ${FOLLY_LINK_LIBRARIES})
 target_include_directories(folly_fingerprint PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 add_dependencies(folly_fingerprint folly_base)
 apply_folly_compile_options_to_target(folly_fingerprint)
-
+endif()
 # We want to generate a single library and target for folly, but we needed a
 # two-stage compile for the fingerprint tables, so we create a phony source
 # file that we modify whenever the base libraries change, causing folly to be
 # re-linked, making things happy.
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/folly_dep.cpp
   COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/folly_dep.cpp
-  DEPENDS folly_base folly_fingerprint
+  DEPENDS folly_base
 )
+
 add_library(folly ${CMAKE_CURRENT_BINARY_DIR}/folly_dep.cpp $<TARGET_OBJECTS:folly_base>)
 apply_folly_compile_options_to_target(folly)
 source_group("" FILES ${CMAKE_CURRENT_BINARY_DIR}/folly_dep.cpp)
