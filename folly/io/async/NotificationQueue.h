@@ -263,7 +263,7 @@ class NotificationQueue {
       : eventfd_(-1),
         pipeFds_{-1, -1},
         advisoryMaxQueueSize_(maxSize),
-        pid_(pid_t(getpid())),
+        pid_(pid_t(::getpid())),
         queue_() {
 
     RequestContext::saveContext();
