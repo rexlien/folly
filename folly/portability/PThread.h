@@ -94,10 +94,12 @@ int pthread_setspecific(pthread_key_t key, const void* value);
 
 // Because we defined `INCLUDE_NP` above, the non-portable APIs don't actually
 // get declared. We still need them, so declare them ourselves instead.
-PTW32_DLLPORT HANDLE PTW32_CDECL
-pthread_getw32threadhandle_np(pthread_t thread);
-PTW32_DLLPORT DWORD PTW32_CDECL pthread_getw32threadid_np(pthread_t thread);
-
+extern "C"
+{
+    PTW32_DLLPORT HANDLE PTW32_CDECL
+        pthread_getw32threadhandle_np(pthread_t thread);
+    PTW32_DLLPORT DWORD PTW32_CDECL pthread_getw32threadid_np(pthread_t thread);
+}
 // And now everything else that isn't just here for `pid_t`.
 
 // We implement a sane comparison operand for
