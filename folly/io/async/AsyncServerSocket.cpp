@@ -801,6 +801,15 @@ void AsyncServerSocket::setupSocket(int fd, int family) {
   }
 #endif
 
+  if (family == AF_INET6) {
+      int v6only = 0;
+      if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &v6only, sizeof(v6only)) != 0)
+      {
+          LOG(ERROR) << "failed to set IPV6_V6ONLY on async server socket: " <<
+              strerror(errno);
+      }
+  }
+
   if (const auto shutdownSocketSet = wShutdownSocketSet_.lock()) {
     shutdownSocketSet->add(fd);
   }
