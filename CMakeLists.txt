@@ -203,7 +203,7 @@ source_group("" FILES ${FOLLY_DIR}/build/GenerateFingerprintTables.cpp)
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/folly/build/FingerprintTables.cpp
-  COMMAND GenerateFingerprintTables
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/GenerateFingerprintTables
   DEPENDS GenerateFingerprintTables
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/folly/build/
   COMMENT "Generating the fingerprint tables..."
